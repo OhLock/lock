@@ -3,6 +3,9 @@
  */
 import express from 'express'
 import config from './config'
+import routes from './core/routes'
+import './core/models'
+import './server/logger'
 
 // use middleware
 import use from './server/use'
@@ -10,6 +13,7 @@ import use from './server/use'
 const app = new express()
 
 use(app)
+routes(app)
 
 process.on('SIGINT', () => {
     console.log('bye~')

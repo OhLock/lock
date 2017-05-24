@@ -1,0 +1,69 @@
+h2.title {
+    font-weight: 300;
+}
+
+.main {
+    width: 100%;
+    height: calc(100vh - 12px);
+    min-height: 400px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+footer.default {
+    background: #1C2023;
+    padding: 24px;
+}
+.sign {
+    display: block;
+    max-width: 240px;
+    width: 100%;
+}
+.sign .title {
+    font-size: 2em;
+    font-family: "Roboto script=all rev=2";
+    font-weight: 300;
+    color: #1C2023;
+    text-align: center;
+}
+.sign label {
+    display: block;
+}
+.sign label span {
+    display: block;
+    font-size: 12px;
+    margin: 12px 0;
+}
+.sign input[type=text], .sign input[type=password] {
+    display: block;
+    width: 100%;
+    border: none;
+    background-color: transparent;
+    font-size: 14px;
+    height: 37px;
+    line-height: 27px;
+    max-width: 100%;
+    margin-bottom: 16px;
+    outline: none;
+    transition: .3s color;
+    padding: 9px 25px 10px 15px;
+    border-radius: 4px;
+    border: 1px solid #E6EDF4;
+    color: #7E899B;
+}
+.sign .btns {
+    text-align: right
+}
+.btn {
+    cursor: pointer;
+    display: inline-block;
+    background: #fff;
+    color: #007eff;
+    line-height: 1;
+    border: none;
+    border-radius: 24px;
+    font-size: 1.4em;
+    outline: none;
+    text-decoration: none;
+}

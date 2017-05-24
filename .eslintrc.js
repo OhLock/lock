@@ -35,6 +35,6 @@ module.exports = {
         "babel/no-invalid-this": 1,
         "babel/semi": ["error", "never"],
         "babel/object-curly-spacing": ["error", "always"],
-        "object-curly-newline": ["error", { "minProperties": 2 }]
+        "object-curly-newline": 0
     }
 }

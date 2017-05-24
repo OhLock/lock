@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
-import { mongo as config } from '../../config'
+import config from '../../config'
 
-mongoose.connect(`mongodb://${config.username}:${config.pwd}@${config.host}:${config.port}/${config.db}`)
+mongoose.connect(`mongodb://${config.mongodb.username}:${config.mongodb.pwd}@${config.mongodb.host}:${config.mongodb.port}/${config.mongodb.db}`)
 
 let db = mongoose.connection
 

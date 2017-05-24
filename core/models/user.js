@@ -65,12 +65,13 @@ let userSchema = new Schema({
     }
 })
 
+
 userSchema.index({
     name: 1,
     type: -1
 })
-
 userSchema.plugin(Plugins)
+
 
 let user = mongoose.model('user', userSchema)
 
