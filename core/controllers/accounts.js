@@ -45,24 +45,17 @@ export const signin = async (req, res) => {
  * @return {Promise}     [description]
  */
 export const validator = async (req, res) => {
-    if (req.query.resource === 'signup') {
-        try {
+    try {
+        if (req.query.resource === 'signup') {
             await veliSignUp(req.body)
-        } catch (error) {
-            return respond(res, {
-                validator: false,
-                errorMessage: error
-            }, true)
-        }
-    } else {
-        try {
+        } else {
             await veliSignIn(req.body)
-        } catch (error) {
-            return respond(res, {
-                validator: false,
-                errorMessage: error
-            }, true)
         }
+    } catch (error) {
+        return respond(res, {
+            validator: false,
+            errorMessage: error
+        }, true)
     }
     return respond(res, {
         validator: true
