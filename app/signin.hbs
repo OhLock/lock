@@ -1,14 +1,10 @@
 {{!< default}}
 <div class="main">
-    <form class="sign" action="signup" method="post"  autocomplete="off">
+    <form class="sign" action="signin" method="post" autocomplete="off">
         <h2 class="title">{{title}}</h2>
         <label>
             <span>Account Name</span>
             <input type="text" id="username" name="username">
-        </label>
-        <label>
-            <span>Account Email</span>
-            <input type="text" id="email" name="email">
         </label>
         <label>
             <span>Account Pwd</span>
@@ -24,7 +20,6 @@
 (function () {
     var input = document.querySelector('.sign')
     var username = document.getElementById('username')
-    var email = document.getElementById('email')
     var pwd = document.getElementById('pwd')
 
     var btn = document.getElementById('btn')
@@ -41,10 +36,9 @@
         if (!isVar) e.preventDefault()
     }, false)
     function validator () {
-        axios.post('/validator?resource=signup', {
+        axios.post('/validator?resource=signin', {
             username: username.value,
-            email: email.value,
-            pwd: pwd.value,
+            pwd: pwd.value
         })
             .then(function (response) {
                 isVar = response.data.validator

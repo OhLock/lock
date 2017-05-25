@@ -28,8 +28,8 @@ export default async function (schema, options) {
         await user.save()
         return true
     }
-    schema.statics.login = async function (userName, pwd) {
-        let userInfo = await this.findOne({username: userName})
+    schema.statics.signin = async function (userName, pwd) {
+        let userInfo = await this.findOne({ username: userName })
         let salt = userInfo.salt
 
         let hash = await crypto.pbkdf2Sync(pwd, salt, 23333, 32, 'sha512').toString('hex')
@@ -45,7 +45,7 @@ export default async function (schema, options) {
     }
     schema.statics.authenticate = async function (req, res, next) {
         try {
-            let token = req.cookies.token || req.headers.authorization
+            req.cookies.token || req.headers.authorization
         } catch (error) {
             return respond(res, [401, {
                 message: '注册失败'

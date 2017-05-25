@@ -10,7 +10,9 @@ import config from '../config'
 import exphbs from 'express-handlebars'
 import helpers from '../core/helpers'
 import session from 'express-session'
+import redis from './session'
 import flash from './flash'
+import ms from 'ms'
 let url = relative('../app')
 
 function relative (path) {
@@ -32,14 +34,12 @@ export default (app) => {
     app.set('secret', config.secret)
     app.use(bodyParser.json())
     app.use(bodyParser.urlencoded({ extended: false }))
-    app.use(session({
+    app.use(redis({
         secret: config.secret,
-        resave: false,
-        saveUninitialized: true,
         cookie: {
+            path: '/',
             httpOnly: true,
-            secure: false,
-            maxAge: null
+            maxAge: ms('7d')
         }
     }))
     app.use(flash())
