@@ -6,17 +6,21 @@ export default function (options) {
     }
 }
 
-function _flash (type, msg) {
-    let msgs = this.session.flash = this.session.flash || {}
+async function _flash (type, msg) {
+    let msgs = await this.redis.get('flash') || {}
     if (type && msg) {
         msgs[type] = msg
+        await this.redis.set('flash', msgs)
         return this
     } else if (type) {
         let m = msgs[type]
         delete msgs[type]
+        await this.redis.set('flash', msgs)
+        console.log(m)
         return m
     } else {
-        this.session.flash = {}
+        msgs = {}
+        await this.redis.set('flash', msgs)
         return msgs
     }
 }

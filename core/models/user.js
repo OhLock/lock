@@ -63,6 +63,10 @@ let userSchema = new Schema({
         type: String,
         default: null
     }
+}, {
+    toJson: {
+        virtuals: true
+    }
 })
 
 

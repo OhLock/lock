@@ -25,15 +25,16 @@ export const signup = async (req, res) => {
 }
 
 export const signin = async (req, res) => {
+    let info
     try {
-        await User.signin(req.body.username, req.body.pwd)
+        info = await User.signin(req.body.username, req.body.pwd)
     } catch (error) {
         return respond(res, [
             400,
             error
         ])
     }
-    req.flash('message', '登录成功')
+    req.redis.set('userId', info.data._id + '')
     return res.redirect('/')
 }
 

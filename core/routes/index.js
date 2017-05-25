@@ -1,13 +1,14 @@
 import { signup, signin, Verify, validator } from '../controllers/accounts'
+import { User } from '../models'
 export default (server) => {
     server.get('/', async (req, res) => {
+        let user = await User.findById(req.redis.data.userId)
         res.render('index', {
-            title: 'index'
+            title: 'index',
+            user: user
         })
     })
     server.get('/signup', async (req, res) => {
-        let a = await req.redis.get('test')
-        console.log(a)
         res.render('signup', {
             title: 'Sign Up'
         })
@@ -18,10 +19,11 @@ export default (server) => {
         })
     })
     server.get('/signupdown', async (req, res) => {
-        if (req.flash('message')) return res.redirect('/signin')
+        let message = await req.flash('message')
+        if (!message) return res.redirect('/signin')
         res.render('signupdown', {
             title: 'Sign Up Down',
-            message: req.flash('message')
+            message: message
         })
     })
     server.post('/signup', Verify.signup, signup)

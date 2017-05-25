@@ -1,14 +1,12 @@
 import cookie from 'cookie'
-import onHeaders from 'on-headers'
 import uid from 'uid-safe'
 import Redis from 'ioredis'
-import crypto from 'crypto'
 import parseUrl from 'parseurl'
 import signature from 'cookie-signature'
 
 export default function (options) {
     let opts = options || {}
-    let name = opts.name || opts.key || 'connect.rid'
+    let name = opts.name = opts.name || opts.key || 'connect.rid'
     let secret = opts.secret
     let redis = new Redis()
     let cookieOtp = options.cookie
@@ -25,7 +23,7 @@ export default function (options) {
             }
             setCookie(res, name, redisId, secret, cookieOtp)
             req.redisCon = redis
-            req.redis = await new _redis(req, opts).init()
+            req.redis = await new _redis(req, res, opts).init()
             next()
         } catch (err) {
             console.error(err)
@@ -44,12 +42,13 @@ function getCookie (req, name, secret) {
     if (headers) {
         let cookies = cookie.parse(headers)
         let raw = cookies[name]
-        if (raw.substr(0, 2) === 'r:') {
-            return signature.unsign(raw.slice(2), secret)
-        } else {
-            return null
+        if (raw) {
+            if (raw.substr(0, 2) === 'r:') {
+                return signature.unsign(raw.slice(2), secret)
+            }
         }
     }
+    return null
 }
 /**
  * 生成cookies，设置响应头
@@ -66,16 +65,20 @@ function setCookie (res, name, id, secret, cookieOtp) {
     let header = Array.isArray(prev) ? prev.concat(data) : [prev, data]
     res.setHeader('set-cookie', header)
 }
-
+/**
+ * 生成一个uid
+ * @return {Boolean} [description]
+ */
 async function setredisId () {
     return await uid(24)
 }
 class _redis {
-    constructor (vm, options) {
-        this.vm = vm
-        this.id = vm.redisId
-        this.redis = vm.redisCon
-        this.cookies = vm.cookies
+    constructor (req, res, options) {
+        this.res = res
+        this.req = req
+        this.id = req.redisId
+        this.redis = req.redisCon
+        this.cookies = req.cookies
         this.options = options
         this.data = {}
     }
@@ -91,22 +94,19 @@ class _redis {
     }
     async set (type, msg) {
         let pid = this.id
-        if (msg instanceof Object) {
+        if (msg instanceof Object || msg instanceof Array) {
             msg = JSON.stringify(msg)
-        }
-        if (msg instanceof Array) {
-            msg = `[${msg.join(',')}]`
         }
         return await this.redis.hset(pid, type, msg)
     }
     async get (type) {
         let pid = this.id
         let data = await this.redis.hget(pid, type)
-        if (data[0] === '{' && data[data.length - 1] === '}') {
+        if (isObject(data)) {
             data = JSON.parse(data)
         }
-        if (data[0] === '[' && data[data.length - 1] === ']') {
-            data = data.slice(1, data.length - 1).split(',')
+        if (isArray(data)) {
+            data = JSON.parse(data)
         }
         return data
     }
@@ -119,7 +119,24 @@ class _redis {
     async hdel (type) {
         return await this.redis.hdel(this.id, type)
     }
-    async del () {
+    async destroy () {
+        this.res.clearCookie(this.options.name, { path: '/' })
         return await this.redis.del(this.id)
+    }
+}
+function isObject (text) {
+    try {
+        if (JSON.parse(text) instanceof Object)
+            return true
+    } catch (error) {
+        return false
+    }
+}
+function isArray (text) {
+    try {
+        if (JSON.parse(text) instanceof Array)
+            return true
+    } catch (error) {
+        return false
     }
 }
