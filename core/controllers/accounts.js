@@ -34,7 +34,11 @@ export const signin = async (req, res) => {
             error
         ])
     }
-    req.redis.set('userId', info.data._id + '')
+    req.redis.set('isAuthenticated', true)
+    req.redis.set('authInfo', {
+        isOauth: false,
+        userId: info.data._id + ''
+    })
     return res.redirect('/')
 }
 

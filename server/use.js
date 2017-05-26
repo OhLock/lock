@@ -9,7 +9,6 @@ import cookieParser from 'cookie-parser'
 import config from '../config'
 import exphbs from 'express-handlebars'
 import helpers from '../core/helpers'
-import session from 'express-session'
 import redis from './session'
 import flash from './flash'
 import ms from 'ms'
@@ -39,7 +38,7 @@ export default (app) => {
         cookie: {
             path: '/',
             httpOnly: true,
-            maxAge: ms('7d')
+            maxAge: ms('7d') / 1000
         }
     }))
     app.use(flash())

@@ -90,6 +90,15 @@ class _redis {
             secret: this.options.secret
         })
         this.data = await this.hgetall()
+        Object.keys(this.data)
+            .forEach(key => {
+                Object.defineProperty(this, key, {
+                    configurable: true,
+                    enumerable: true,
+                    get: () => this.data[key],
+                    set: (val) => this.data[key] = val
+                })
+            })
         return this
     }
     async set (type, msg) {
@@ -114,7 +123,19 @@ class _redis {
         return await this.redis.hmset(this.id, data)
     }
     async hgetall () {
-        return await this.redis.hgetall(this.id)
+        let data =  await this.redis.hgetall(this.id)
+        let newData = {}
+        Object.keys(data)
+            .forEach(key => {
+                if (isObject(data[key])) {
+                    newData[key] = JSON.parse(data[key])
+                } else if (isArray(data)) {
+                    newData[key] = JSON.parse(data[key])
+                } else {
+                    newData[key] = data[key]
+                }
+            })
+        return newData
     }
     async hdel (type) {
         return await this.redis.hdel(this.id, type)

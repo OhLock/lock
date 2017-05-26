@@ -1,21 +1,72 @@
 import { signup, signin, Verify, validator } from '../controllers/accounts'
+import { authenticated } from '../controllers/authenticated'
+import { github } from '../controllers/oauth'
 import { User } from '../models'
+import * as auth from '../middleware/auth'
+import axios from 'axios'
+axios.defaults.headers = {
+    Accept: 'application/json'
+}
 export default (server) => {
-    server.get('/', async (req, res) => {
-        let user = await User.findById(req.redis.data.userId)
+    server.get('/', auth.authenticated, async (req, res) => {
+        let authInfo = req.redis.authInfo
+        let initUser = {}
+        let user = {}
+        if (authInfo.isOauth) {
+            initUser = await axios.post('https://api.github.com/graphql', {
+                query: `
+                    query {
+                        viewer {
+                            login
+                            avatarUrl
+                            name
+                            url
+                            email
+                            bio
+                            websiteUrl
+                        }
+                    }`
+            }, {
+                headers: {
+                    Authorization: `bearer ${authInfo.token}`
+                }
+            })
+            initUser = initUser.data.data.viewer
+            Object.keys(initUser)
+                .forEach(key => {
+                    if (key === 'login') {
+                        user.username = initUser[key]
+                    } else if (key === 'name') {
+                        user.nickname = initUser[key]
+                    } else if (key === 'avatarUrl') {
+                        user.avatar = initUser[key]
+                    } else if (key === 'websiteUrl') {
+                        user.url = initUser[key]
+                    } else if (key === 'bio') {
+                        user.description = initUser[key]
+                    } else {
+                        user[key] = initUser[key]
+                    }
+                })
+        } else {
+            user = await User.findById(req.redis.data.userId)
+        }
+        console.log(user)
         res.render('index', {
             title: 'index',
             user: user
         })
     })
-    server.get('/signup', async (req, res) => {
+    server.get('/signup', auth.anonymous, async (req, res) => {
         res.render('signup', {
             title: 'Sign Up'
         })
     })
-    server.get('/signin', async (req, res) => {
+    server.get('/signin', auth.anonymous, async (req, res) => {
+        let message = await req.flash('message')
         res.render('signin', {
-            title: 'Sign In'
+            title: 'Sign In',
+            message: message
         })
     })
     server.get('/signupdown', async (req, res) => {
@@ -26,6 +77,8 @@ export default (server) => {
             message: message
         })
     })
+    server.get('/authenticated', authenticated)
+    server.get('/oauth/github', github)
     server.post('/signup', Verify.signup, signup)
     server.post('/signin', Verify.signin, signin)
     server.post('/validator', validator)
