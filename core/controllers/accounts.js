@@ -1,5 +1,4 @@
 import { User } from '../models'
-import respond from '../middleware/respond'
 import { orUserName, orPwd, orEmail } from '../utils'
 /**
  * 注册
@@ -15,13 +14,18 @@ export const signup = async (req, res) => {
     try {
         await User.signUp(user, req.body.pwd)
     } catch (error) {
-        return respond(res, [
-            400,
-            error
-        ])
+        return req.cute.unAuth(error)
     }
     req.flash('message', '注册成功')
     res.redirect('/signupdown')
+}
+
+export const signout = async (req, res, next) => {
+    res.clearCookie('connect.rid', { path: '/', httpOnly: true})
+    req.redis.destroy()
+    return req.cute.ok({
+        message: '退出成功'
+    })
 }
 
 export const signin = async (req, res) => {
@@ -29,11 +33,9 @@ export const signin = async (req, res) => {
     try {
         info = await User.signin(req.body.username, req.body.pwd)
     } catch (error) {
-        return respond(res, [
-            400,
-            error
-        ])
+        return req.cute.unAuth(error)
     }
+    res.cookie('is_auth', true, { path: '/', httpOnly: true})
     req.redis.set('isAuthenticated', true)
     req.redis.set('authInfo', {
         isOauth: false,
@@ -56,14 +58,14 @@ export const validator = async (req, res) => {
             await veliSignIn(req.body)
         }
     } catch (error) {
-        return respond(res, {
+        return req.cute.ok({
             validator: false,
             errorMessage: error
-        }, true)
+        })
     }
-    return respond(res, {
+    return req.cute.ok({
         validator: true
-    }, true)
+    })
 }
 /**
  * 验证中间件
@@ -74,9 +76,9 @@ export const Verify = {
         try {
             await veliSignUp(req.body)
         } catch (error) {
-            return respond(res, [401, {
+            return req.cute.unAuth({
                 message: error
-            }])
+            })
         }
         next()
     },
@@ -84,9 +86,9 @@ export const Verify = {
         try {
             await veliSignIn(req.body)
         } catch (error) {
-            return respond(res, [401, {
+            return req.cute.unAuth({
                 message: error
-            }])
+            })
         }
         next()
     }

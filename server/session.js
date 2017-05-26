@@ -83,12 +83,9 @@ class _redis {
         this.data = {}
     }
     async init () {
-        if (await this.redis.hsetnx(this.id, '_id', this.id)) {
-            this.redis.expire(this.id, this.options.cookie.maxAge / 1000)
+        if (await this.redis.hsetnx(this.id, 'cookies', JSON.stringify(this.options))) {
+            await this.redis.expire(this.id, this.options.cookie.maxAge)
         }
-        await this.redis.hmset(this.id, {
-            secret: this.options.secret
-        })
         this.data = await this.hgetall()
         Object.keys(this.data)
             .forEach(key => {

@@ -12,6 +12,7 @@ import helpers from '../core/helpers'
 import redis from './session'
 import flash from './flash'
 import ms from 'ms'
+import cute from './cute'
 let url = relative('../app')
 
 function relative (path) {
@@ -47,5 +48,6 @@ export default (app) => {
     app.engine('.hbs', hbs.engine)
     app.set('view engine', '.hbs')
     app.set('views', url)
+    app.use(cute())
     app.use('/assets', express.static(`${url}/assets/`))
 }

@@ -1,7 +1,8 @@
-import { signup, signin, Verify, validator } from '../controllers/accounts'
+import { signup, signin, signout, Verify, validator } from '../controllers/accounts'
 import { authenticated } from '../controllers/authenticated'
 import { github } from '../controllers/oauth'
 import { User } from '../models'
+import { GithubAuthorize } from '../middleware/oauth'
 import * as auth from '../middleware/auth'
 import axios from 'axios'
 axios.defaults.headers = {
@@ -51,7 +52,6 @@ export default (server) => {
         } else {
             user = await User.findById(req.redis.data.userId)
         }
-        console.log(user)
         res.render('index', {
             title: 'index',
             user: user
@@ -77,9 +77,11 @@ export default (server) => {
             message: message
         })
     })
+    server.get('/signout', signout)
     server.get('/authenticated', authenticated)
     server.get('/oauth/github', github)
     server.post('/signup', Verify.signup, signup)
     server.post('/signin', Verify.signin, signin)
     server.post('/validator', validator)
+    server.get('/test', GithubAuthorize)
 }
