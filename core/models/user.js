@@ -56,12 +56,35 @@ let userSchema = new Schema({
         default: Date.now
     },
     website: {
-        type: Date,
+        type: String,
         default: null
     },
     location: {
         type: String,
         default: null
+    },
+    github_info: {
+        login: {
+            type: String,
+        },
+        avatarUrl: {
+            type: String,
+        },
+        name: {
+            type: String,
+        },
+        url: {
+            type: String,
+        },
+        email: {
+            type: String,
+        },
+        bio: {
+            type: String,
+        },
+        databaseId: {
+            type: Number,
+        },
     }
 }, {
     toJson: {

@@ -7,11 +7,11 @@ import { orUserName, orPwd, orEmail } from '../utils'
  * @return {Promise}     [description]
  */
 export const signup = async (req, res) => {
-    let user = await new User({
-        username: req.body.username,
-        email: req.body.email
-    })
     try {
+        let user = await new User({
+            username: req.body.username,
+            email: req.body.email
+        })
         await User.signUp(user, req.body.pwd)
     } catch (error) {
         return req.cute.unAuth(error)
@@ -22,6 +22,7 @@ export const signup = async (req, res) => {
 
 export const signout = async (req, res, next) => {
     res.clearCookie('connect.rid', { path: '/', httpOnly: true})
+    res.clearCookie('is_auth', { path: '/', httpOnly: true})
     req.redis.destroy()
     return req.cute.ok({
         message: '退出成功'
@@ -35,7 +36,7 @@ export const signin = async (req, res) => {
     } catch (error) {
         return req.cute.unAuth(error)
     }
-    res.cookie('is_auth', true, { path: '/', httpOnly: true})
+    res.cookie('is_auth', true, req.redis.cookie)
     req.redis.set('isAuthenticated', true)
     req.redis.set('authInfo', {
         isOauth: false,
@@ -71,7 +72,7 @@ export const validator = async (req, res) => {
  * 验证中间件
  * @type {Object}
  */
-export const Verify = {
+export const verify = {
     signup: async (req, res, next) => {
         try {
             await veliSignUp(req.body)

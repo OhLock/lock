@@ -1,28 +1,56 @@
-import axios from 'axios'
-axios.defaults.headers = {
-    Accept: 'application/json'
-}
+import axios from '../middleware/axios'
+import { User } from '../models'
+import { githubInfoFoLocal } from '../utils'
 /**
  * Created by yuer on 2017/5/26.
  */
-export const github = async (req, res) => {
-    let code = req.query.code
-    let cb
-    try {
-        cb = await axios.post('https://github.com/login/oauth/access_token', {
-            client_id: '6509c38c55d429061594',
-            client_secret: '76f14c9b6c945f197491eb3f7006d1aa89ec22d0',
-            code: code,
-        })
-    } catch (err) {
-        req.flash('message', '认证失败')
-        return res.redirect('/sigin')
+let userInfoGraphql = `
+query {
+    viewer {
+        login
+        avatarUrl
+        name
+        email
+        bio
+        websiteUrl
+        databaseId
     }
-    let token = cb.data.access_token
-    req.redis.set('isAuthenticated', true)
-    req.redis.set('authInfo', {
-        isOauth: true,
-        auth: 'github',
-        token: token
-    })
+}`
+export const github = async (req, res, error, token) => {
+    if (error) {
+        return req.cute.unAuth({
+            message: '认证失败'
+        })
+    }
+    try {
+        let cb = await axios.post('https://api.github.com/graphql', {
+            query: userInfoGraphql
+        }, {
+            headers: {
+                Authorization: `bearer ${token}`
+            }
+        })
+        let userInfo = cb.data.viewer
+        let user
+        user = await User.findOne({'github_info.databaseId': userInfo.databaseId})
+        // 假如有用户就直接登录，没有就新建一个用户
+        if (!user) {
+            user = await new User({
+                ...githubInfoFoLocal(userInfo),
+                github_info: userInfo
+            })
+        }
+        res.cookie('is_auth', true, req.redis.cookie)
+        req.redis.set('isAuthenticated', true)
+        req.redis.set('authInfo', {
+            isOauth: true,
+            userId: user._id + ''
+        })
+        return res.redirect('/')
+    } catch (err) {
+        req.cute.unAuth({
+            message: '认证失败',
+            errData: err
+        })
+    }
 }

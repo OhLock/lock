@@ -12,8 +12,6 @@ export default function (options) {
     let cookieOtp = options.cookie
     return async function(req, res, next) {
         try {
-            if (req.redis) return next()
-
             let originalPath = parseUrl.original(req).pathname
             if (originalPath.indexOf('/') !== 0) return next()
 
