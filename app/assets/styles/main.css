@@ -51,19 +51,28 @@ footer.default {
     border-radius: 4px;
     border: 1px solid #E6EDF4;
     color: #7E899B;
+    background: #E6EDF4;
 }
 .sign .btns {
     text-align: right
 }
 .btn {
     cursor: pointer;
-    display: inline-block;
-    background: #fff;
-    color: #007eff;
+    display: block;
+    text-align: center;
+    color: #fff;
     line-height: 1;
     border: none;
     border-radius: 24px;
-    font-size: 1.4em;
+    font-size: 14px;
     outline: none;
     text-decoration: none;
+    margin: 0 24px;
+    padding: 10px 16px;
+    background: #00b4ff linear-gradient(45deg, #009cff, #4bd3ff);
+    margin-bottom: 12px;
+    transition: .3s transform;
+}
+.btn:hover {
+    transform: scale(1.09, 1.09) !important;
 }
